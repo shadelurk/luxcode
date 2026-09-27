@@ -59,7 +59,40 @@ button{font:inherit;cursor:pointer}
 #ov .box{text-align:center;padding:30px 40px;border:1px solid rgba(98,240,255,.25);border-radius:16px;background:rgba(2,10,18,.85)}
 #ov h2{margin:0 0 6px;letter-spacing:.3em;font-size:26px;color:#effcff;text-shadow:0 0 24px rgba(98,240,255,.7)}
 #ov p{color:#9fbccb;line-height:1.8;margin:8px 0 18px}
-@media (max-width:900px){#panel{width:300px}#cmds{width:calc(100% - 300px)}}
+details>summary{cursor:pointer;font-size:10.5px;letter-spacing:.32em;color:var(--dim);font-weight:600;list-style:none}
+details>summary::before{content:"▸ ";}details[open]>summary::before{content:"▾ ";}
+details[open]>summary{margin-bottom:8px}
+.fight{padding:14px;font-size:17px;letter-spacing:.4em;border-color:rgba(255,93,115,.55);background:rgba(255,93,115,.12);box-shadow:0 0 22px rgba(255,93,115,.15)}
+.fight:hover:not(:disabled){background:rgba(255,93,115,.25)!important;border-color:#ff8a9a!important}
+.save{width:100%;margin-top:8px;padding:9px;font-weight:800;letter-spacing:.3em}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px 6px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink);min-height:92px;cursor:pointer;font:inherit}
+.slot img{width:58px;height:58px}
+.slot b{font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot i{font-style:normal;font-size:9.5px;color:var(--dim)}
+.slot.empty{cursor:default;justify-content:center;color:var(--dim);font-size:11px;border-style:dashed}
+.slot.sel{border-color:var(--cy);box-shadow:0 0 12px rgba(98,240,255,.25)}
+.slot.ow{border-color:var(--am);cursor:pointer;animation:pulse 1s infinite}
+.slot .aff{position:absolute;top:3px;right:5px;font-size:10px;font-weight:800}
+@keyframes pulse{50%{box-shadow:0 0 14px rgba(255,196,94,.5)}}
+.slots.big{grid-template-columns:repeat(3,150px);gap:10px;justify-content:center}
+.slots.big .slot{min-height:150px;padding:10px 6px}
+.slots.big .slot img{width:90px;height:90px}
+.slots.big .slot b{font-size:14px}
+.slots.big .slot:hover:not(.empty){border-color:var(--cy);background:rgba(98,240,255,.08)}
+#tools{position:fixed;z-index:3;display:flex;gap:8px;align-items:flex-start}
+#tools .b{font-size:12px;background:rgba(4,16,26,.85)}
+#cardPick>summary{padding:6px 10px;border-radius:7px;border:1px solid rgba(98,240,255,.3);background:rgba(4,16,26,.85);color:#e8fbff;letter-spacing:.05em;font-size:12px;font-weight:400}
+#cardPick .pop{margin-top:6px;width:280px;padding:10px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,20,.97)}
+#cardPick .pop select{width:100%}
+#pick{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(4,18,30,.8),rgba(0,2,6,.95))}
+#pick.on{display:flex}
+.pbox{text-align:center;padding:24px 30px;border:1px solid rgba(98,240,255,.25);border-radius:16px;background:rgba(2,10,18,.9);max-width:94vw}
+.pbox h2{margin:0 0 4px;letter-spacing:.2em;font-size:22px;color:#effcff}
+.pbox p{color:#9fbccb;margin:4px 0 16px;font-size:13px}
+#pickOpts{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+#pickOpts .b{padding:10px 16px;font-weight:700}
+@media (max-width:900px){#panel{width:300px}#cmds{width:calc(100% - 300px)}.slots.big{grid-template-columns:repeat(3,110px)}}
 </style>
 </head>
 <body>
@@ -67,17 +100,10 @@ button{font:inherit;cursor:pointer}
 <div id="panel">
   <div class="brand">ラックスコード<small>LUXCODE BARCODE BATTLER</small></div>
   <div class="card hot" id="chBox" style="display:none"></div>
-  <div class="card">
-    <h3>CARD</h3>
-    <div class="row" style="margin-top:0"><select id="preset"></select></div>
-    <div class="row"><input id="jan" maxlength="13" placeholder="JANコード 8 / 12 / 13桁"><button class="b" id="janBtn">作成</button></div>
-    <div class="row"><button class="b" id="rndBtn" style="flex:1">ランダム</button><button class="b on" id="insR" style="flex:1">右から差込</button><button class="b" id="insL" style="flex:1">左から差込</button></div>
-    <div id="msg"></div>
-  </div>
-  <div class="card"><h3>読み取り先</h3><div class="seg"><button class="b on" id="tSelf">自分の戦士</button><button class="b" id="tEnemy">対戦相手</button></div></div>
-  <div class="card" id="heroBox"></div>
-  <button class="b big" id="towerBtn">バトルタワーに挑む</button>
-  <div class="card aff"><h3>属性相性</h3>
+  <div class="card" id="lastBox"></div>
+  <div class="card"><h3>保存枠</h3><div class="slots" id="slots"></div><div id="selBox"></div></div>
+  <button class="b big fight" id="fightBtn">対戦</button>
+  <details class="card aff"><summary>属性相性</summary>
     <svg viewBox="0 0 220 150" aria-label="属性相性図">
       <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#ffc45e"/></marker></defs>
       <g stroke="#ffc45e" stroke-width="1.6" fill="none" marker-end="url(#ah)" opacity=".8">
@@ -92,10 +118,22 @@ button{font:inherit;cursor:pointer}
       </g>
     </svg>
     <div class="sub">矢印の先に有利（与ダメ×1.3）、逆向きは不利（×0.8）。虚は誰に対しても与ダメ・被ダメともに×1.1。<br>技の相性：防御は被ダメ半減、疾風刃は防御を貫通、地殻割はDFを無視、虚喰は相手HPが多いほど効く。</div>
-  </div>
-  <div class="card"><h3>読み取り技</h3><div id="techs"></div></div>
+  </details>
+  <details class="card"><summary>読み取り技</summary><div id="techs"></div></details>
   <div id="log"></div>
 </div>
+<div id="tools">
+  <details id="cardPick"><summary id="cardSum">カード</summary>
+    <div class="pop">
+      <select id="preset"></select>
+      <div class="row"><input id="jan" maxlength="13" placeholder="JANコード 8 / 12 / 13桁"><button class="b" id="janBtn">作成</button></div>
+      <div class="row"><button class="b" id="rndBtn" style="flex:1">ランダムなカード</button></div>
+      <div id="msg"></div>
+    </div>
+  </details>
+  <button class="b" id="flipBtn">⇄ 反対側から差す</button>
+</div>
+<div id="pick"><div class="pbox"><h2 id="pickT"></h2><p id="pickP"></p><div class="slots big" id="pickSlots"></div><div id="pickOpts"></div><div class="row" style="justify-content:center;margin-top:14px"><button class="b" id="pickBack">戻る</button><button class="b" id="pickClose">閉じる</button></div></div></div>
 <div id="cmds"></div>
 <div id="ov"><div class="box"><h2 id="ovT">REPLAY</h2><p id="ovP"></p><button class="b big" id="ovB">再生する</button></div></div>
 <script>
@@ -198,11 +236,15 @@ function readFromSegs(code,segs){
   w.card=code;w.rec=recOf(segs);w.id=code+'-'+w.rec;
   return {tech,w,turn:segs.length>1?segs[0].to:null,dist:dec.dist};
 }
-function warriorFromId(id){
+function fromId(id){
   const m=/^(\d{13})-([RL][0-9np.]+)$/.exec(id||'');if(!m)return null;
   const d=[...m[1]].map(Number);if(cdig(d)!==d[12])return null;
   const segs=segsOf(m[2]);if(!segs)return null;
-  const r=readFromSegs(m[1],segs);return r.error||r.w.kind!=='warrior'?null:r.w;
+  const r=readFromSegs(m[1],segs);return r.error?null:r.w;
+}
+function itemFromId(id){const w=fromId(id);return w&&w.kind==='item'?w:null;}
+function warriorFromId(id){
+  const w=fromId(id);return w&&w.kind==='warrior'?w:null;
 }
 
 // ================= warriors =================
@@ -272,7 +314,14 @@ const PRESETS=[['453987120654','カード A'],['471002938476','カード B'],['4
   ['880345612097','カード E'],['302751846920','カード F'],['215908374625','カード G']].map(([b,l])=>[codeWarrior(b).code.slice(0,12),l]);
 PRESETS.push(['490123456789','アイテムカード']);
 const G={mode:'scan',card:null,cardX:0,dragging:false,grabDX:0,insertSide:'right',sess:null,trace:null,lastIdx:-1,ret:null,
-  reveal:null,target:'self',hero:null,challenger:null,items:[],tower:{active:false,floor:0,hp:0},log:[],lastTech:null,lastTick:0};
+  reveal:null,last:null,lastSaved:false,slots:Array(6).fill(null),sel:-1,overwrite:false,pick:null,
+  challenger:null,items:[],tower:{active:false,floor:0,hp:0,slot:-1},log:[],lastTech:null,lastTick:0};
+// saved warriors persist as read records only; everything is re-derived on load
+const LS='luxcode.v1';
+function saveStore(){try{localStorage.setItem(LS,JSON.stringify({slots:G.slots.map(w=>w?w.id:null),items:G.items.map(i=>i.id)}));}catch(_){}}
+function loadStore(){try{const d=JSON.parse(localStorage.getItem(LS)||'null');if(!d)return;
+  G.slots=Array.from({length:6},(_,i)=>d.slots&&d.slots[i]?warriorFromId(d.slots[i]):null);
+  G.items=(d.items||[]).map(itemFromId).filter(Boolean).slice(0,4);}catch(_){}}
 let B=null,W=0,H=0,DPR=1,CW=0,PANEL=360,k=1,T=0;
 const GRACE=1000;
 function log(m,c){G.log.push({m,c});if(G.log.length>40)G.log.shift();renderPanel();}
@@ -296,6 +345,7 @@ function layout(){
   cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
   PANEL=W<=900?300:360;CW=W-PANEL;k=clamp(Math.min(CW/1150,H/880),.6,1.15);
   if(!G.sess)resetCard(true);
+  const g=geo(),tl=$('tools');tl.style.left=Math.round(CW*.04+130*k)+'px';tl.style.top=Math.round(g.readerY+g.stripH/2+40*k+5)+'px';
 }
 function geo(){
   const MW=3*k,cw=440*k,ch=190*k,bOff=78*k,sensorX=CW/2,readerY=Math.round(H*.63),stripH=60*k,stripTop=ch-stripH-6*k;
@@ -353,14 +403,21 @@ function deliver(res){
   if(res.tech==='NORMAL'){snd(1250,.07,'square',.03);snd(1650,.12,'square',.03,0,.09);}
   else{[0,1,2,3].forEach(i=>snd(700*Math.pow(1.26,i),.12,'triangle',.04,0,i*.07));}
   const turn=res.turn!=null?`（折返し ${res.turn}）`:'';
-  if(w.kind==='item'){if(G.items.length>=4)G.items.shift();G.items.push(w);log(`${t.jp}${turn}：アイテム「${w.name}」を入手`,'#ffe0a8');return;}
-  if(G.target==='enemy'&&G.hero){
-    G.challenger=w;log(`${t.jp}${turn}：対戦相手「${w.name}」出現`,'#ff9aa8');
-    setTarget('self');setTimeout(()=>{if(G.mode==='scan'&&G.challenger===w)startBattle(G.hero,w,{mode:'duel',label:'フリー対戦'});},2600);
-    return;
-  }
-  G.hero=w;G.tower={active:false,floor:0,hp:0};
-  log(`${t.jp}${turn}：「${w.name}」${w.title} が目覚めた${w.valid?'':'（チェックデジット不一致＝歪み）'}`,'#9fe6f2');
+  if(w.kind==='item'){if(G.items.length>=4)G.items.shift();G.items.push(w);saveStore();log(`${t.jp}${turn}：アイテム「${w.name}」を入手（タワーで使用）`,'#ffe0a8');return;}
+  G.last=w;G.lastSaved=G.slots.some(s=>s&&s.id===w.id);G.overwrite=false;
+  log(`${t.jp}${turn}：「${w.name}」${w.title} が目覚めた${w.valid?'':'（歪み）'}`,'#9fe6f2');
+}
+function saveLast(){
+  const w=G.last;if(!w||G.lastSaved)return;
+  const i=G.slots.findIndex(s=>!s);
+  if(i<0){G.overwrite=true;renderPanel();return;}
+  putSlot(i,w);
+}
+function putSlot(i,w){
+  G.slots[i]=w;G.sel=i;G.lastSaved=true;G.overwrite=false;
+  if(G.tower.slot===i)G.tower={active:false,floor:0,hp:0,slot:-1};
+  saveStore();snd(1400,.08,'triangle',.03);snd(1900,.12,'triangle',.03,0,.08);
+  log(`「${w.name}」を保存枠${i+1}に保存しました`,'#9fe6f2');
 }
 
 // ================= drawing helpers =================
@@ -542,7 +599,7 @@ function drawWarriorInfo(w,prog,tx,top,zh,scale,banner,header){
     txt(banner.text,0,0,30*scale,`rgba(255,215,140,${tp})`,'left',900,4);ctx.restore();
     txt(banner.sub,tx+2,y+18*scale,10*scale,'rgba(255,196,94,.7)','left',700,3);
     y+=40*scale;
-  }else if(header){txt(header,tx,y,11*scale,header.startsWith('CHALLENGER')?'#ff9aa8':'rgba(160,200,220,.5)','left',700,4);y+=14*scale;}
+  }else if(header){txt(header,tx,y,11*scale,header.startsWith('CHALLENGER')?'#ff9aa8':header.startsWith('未保存')?'#ffc45e':'rgba(160,200,220,.5)','left',700,4);y+=14*scale;}
   y+=12*scale;
   if(w.kind==='item'){
     txt(w.name,tx,y+14*scale,28*scale,'#ffe7b0','left',900,2);
@@ -571,7 +628,9 @@ function drawReveal(g,now){
     txt(r.res.sub,CW/2,top+zh*.48+34*k,14*k,`rgba(255,190,200,${a*.8})`,'center',500);return;
   }
   const fresh=r&&!r.res.error;
-  let w=fresh?r.res.w:G.hero,header='YOUR WARRIOR';
+  const selW=G.sel>=0?G.slots[G.sel]:null;
+  let w=fresh?r.res.w:(G.last&&!G.lastSaved?G.last:selW||G.last),header='';
+  if(w){const si=G.slots.findIndex(s=>s&&s.id===w.id);header=w===G.last&&!G.lastSaved?'未保存 ─ 右の「保存」で保存枠へ':si>=0?`保存枠 ${si+1}`:'LAST READ';}
   if(!w&&G.challenger){w=G.challenger;header='CHALLENGER ─ 挑戦状が届いています';}
   if(!w){
     txt('右のカードを掴み、読み取り口を左へ通してください',CW/2,top+zh*.45,20*k,'rgba(214,236,245,.8)','center',700,1);
@@ -1051,23 +1110,23 @@ function endBattle(win,action){
   const p=B.p,e=B.e,o=B.opts;
   if(o.mode==='tower'){
     if(win){G.tower.floor++;G.tower.hp=Math.min(p.maxhp,p.hp+Math.round(p.maxhp*.4));
-      if(G.tower.floor>=5){log('バトルタワー制覇！','#ffe0a8');G.tower={active:false,floor:0,hp:0};}}
-    else G.tower={active:false,floor:0,hp:0};
+      if(G.tower.floor>=5){log('バトルタワー制覇！','#ffe0a8');G.tower={active:false,floor:0,hp:0,slot:-1};}}
+    else G.tower={active:false,floor:0,hp:0,slot:-1};
   }
   const pw=p.w,ew=e.w;
   B=null;renderCmds();G.mode='scan';G.reveal=null;
   if(action==='again'){startBattle(pw,ew,{mode:'duel',label:o.label});return;}
-  if(action==='chp'){G.challenger=pw;log(`挑戦相手に「${pw.name}」を設定しました`,'#ff9aa8');}
-  if(action==='che'){G.challenger=ew;log(`挑戦相手に「${ew.name}」を設定しました`,'#ff9aa8');}
+  if(action==='chp'||action==='che'){G.challenger=action==='chp'?pw:ew;log(`「${G.challenger.name}」からの挑戦を受け付けました`,'#ff9aa8');}
   if(o.mode==='replay')history.replaceState(null,'',location.pathname+(G.challenger?'?vs='+G.challenger.id:''));
   renderPanel();
+  if(action==='chp'||action==='che')openPick();
 }
 
 // ================= sharing =================
 const baseURL=()=>/^https?:$/.test(location.protocol)?location.origin+location.pathname:PUBLIC_URL;
 function postX(text,url){window.open('https://x.com/intent/post?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(url),'_blank','noopener');}
-function shareHero(){
-  const w=G.hero;if(!w)return;
+function shareWarrior(w){
+  if(!w)return;
   postX(`【ラックスコード挑戦状】\n${TECH[w.tech].jp}で呼び出した「${w.name}」${w.title} ${'★'.repeat(w.stars)}\nHP${w.hp} ST${w.st} DF${w.df} SPD${w.spd}／必殺 ${SKILL[w.skill].jp}\nこの戦士に勝てるか？ #ラックスコード`,baseURL()+'?vs='+w.id);
 }
 function postResult(){
@@ -1093,37 +1152,100 @@ function saveImage(w){
 }
 
 // ================= panel =================
-function setTarget(t){G.target=t;$('tSelf').classList.toggle('on',t==='self');$('tEnemy').classList.toggle('on',t==='enemy');}
+const thumbCache=new Map();
+function thumb(w){
+  if(thumbCache.has(w.id))return thumbCache.get(w.id);
+  const c=document.createElement('canvas');c.width=c.height=180;
+  const old=ctx;ctx=c.getContext('2d');drawEntity(w,90,90,62,1.3);ctx=old;
+  const u=c.toDataURL();thumbCache.set(w.id,u);return u;
+}
+function slotHTML(w,i,cls,tag){
+  if(!w)return '<div class="slot empty">空き</div>';
+  return `<button class="slot ${cls||''}" data-i="${i}">${tag||''}<img src="${thumb(w)}" alt=""><b style="color:${hsla(w.hue,100,80,1)}">${esc(w.name)}</b><i>${ELJP[w.el]} ・ ${'★'.repeat(w.stars)}</i><i>${TECH[w.tech].jp}</i></button>`;
+}
 function warriorCard(w,extra){
-  return `<div class="wn" style="color:${hsla(w.hue,100,78,1)}">${esc(w.name)}</div><div class="sub">${esc(w.title)}　${'★'.repeat(w.stars)}　${TECH[w.tech].jp}（${w.rec||''}）</div>
+  return `<div class="wn" style="color:${hsla(w.hue,100,78,1)}">${esc(w.name)}</div><div class="sub">${esc(w.title)}　${'★'.repeat(w.stars)}　${TECH[w.tech].jp}</div>
     <div class="stl"><span><i>HP</i>${extra||''}${w.hp}</span><span><i>ST</i>${w.st}</span><span><i>DF</i>${w.df}</span><span><i>SPD</i>${w.spd}</span><span><i>PP</i>${w.pp}</span></div>
     <div class="sub" style="margin-top:6px">必殺 ${SKILL[w.skill].jp} ─ ${SKILL[w.skill].desc}</div>`;
 }
 function renderPanel(){
-  const h=G.hero,busy=G.mode==='battle';
-  let s='<h3>自分の戦士</h3>';
-  if(h)s+=warriorCard(h,G.tower.active?G.tower.hp+'/':'')+
-    `<div class="row"><button class="b x" id="shareBtn" style="flex:1" ${busy?'disabled':''}>挑戦状をXにポスト</button><button class="b" id="imgBtn" ${busy?'disabled':''}>画像を保存</button></div>`;
-  else s+='<div class="sub">まだ読み込んでいません。</div>';
-  s+=`<div class="chips">${G.items.map(i=>`<span class="chip">${esc(i.name)}</span>`).join('')||'<span class="sub">アイテムなし（最大4つ・タワーで使用）</span>'}</div>`;
-  $('heroBox').innerHTML=s;
-  if(h){$('shareBtn').onclick=shareHero;$('imgBtn').onclick=()=>saveImage(G.hero);}
+  const busy=G.mode==='battle';
+  $('tools').style.display=busy?'none':'';
+  const L=G.last;let s='<h3>今読んだ戦士</h3>';
+  if(L){s+=warriorCard(L);
+    s+=G.lastSaved?'<div class="sub" style="margin-top:6px">保存済み</div>':`<button class="b save" id="saveBtn" ${busy?'disabled':''}>${G.overwrite?'上書きする枠を下から選んでください':'保存'}</button>`;}
+  else s+='<div class="sub">カードを掴んで、読み取り口に通してください。</div>';
+  if(G.items.length)s+=`<div class="chips">${G.items.map(i=>`<span class="chip">${esc(i.name)}</span>`).join('')}</div>`;
+  $('lastBox').innerHTML=s;
+  if($('saveBtn'))$('saveBtn').onclick=()=>{if(!G.overwrite)saveLast();};
+  $('slots').innerHTML=G.slots.map((w,i)=>slotHTML(w,i,(G.overwrite?'ow ':'')+(G.sel===i&&!G.overwrite?'sel':''))).join('');
+  const sw=G.sel>=0?G.slots[G.sel]:null;
+  $('selBox').innerHTML=sw&&!G.overwrite?`<div class="row" style="margin-top:8px"><button class="b x" id="shareBtn" style="flex:1" ${busy?'disabled':''}>Xに挑戦状</button><button class="b" id="imgBtn" ${busy?'disabled':''}>画像</button><button class="b" id="delBtn" ${busy?'disabled':''}>削除</button></div>`:'';
+  if(sw&&!G.overwrite){$('shareBtn').onclick=()=>shareWarrior(sw);$('imgBtn').onclick=()=>saveImage(sw);
+    $('delBtn').onclick=()=>{if(!confirm(`「${sw.name}」を保存枠から削除しますか？`))return;G.slots[G.sel]=null;if(G.tower.slot===G.sel)G.tower={active:false,floor:0,hp:0,slot:-1};G.sel=-1;if(G.last)G.lastSaved=G.slots.some(x=>x&&x.id===G.last.id);saveStore();renderPanel();};}
   const ch=G.challenger,cb=$('chBox');
   if(ch){cb.style.display='';
-    const mp=h?matchup(h.el,ch.el):null;
-    cb.innerHTML=`<h3>CHALLENGER ─ 挑戦状</h3>${warriorCard(ch)}${mp?`<div class="sub" style="color:${mp.c}">あなたの${esc(h.name)}から見た相性：${mp.t}（×${mp.m.toFixed(2)}）</div>`:''}
-      <div class="row"><button class="b red" id="acceptBtn" style="flex:1" ${!h||busy?'disabled':''}>${h?'挑戦を受ける':'先に自分のカードを読み込む'}</button><button class="b" id="dropBtn" ${busy?'disabled':''}>破棄</button></div>`;
-    $('acceptBtn').onclick=()=>{if(G.hero&&G.challenger)startBattle(G.hero,G.challenger,{mode:'duel',label:'挑戦状バトル'});};
+    cb.innerHTML=`<h3>挑戦状が届いています</h3>${warriorCard(ch)}<div class="row"><button class="b red" id="acceptBtn" style="flex:1" ${busy?'disabled':''}>受けて立つ</button><button class="b" id="dropBtn" ${busy?'disabled':''}>断る</button></div>`;
+    $('acceptBtn').onclick=openPick;
     $('dropBtn').onclick=()=>{G.challenger=null;history.replaceState(null,'',location.pathname);renderPanel();};
   }else cb.style.display='none';
-  const tb=$('towerBtn');tb.disabled=!h||busy;
-  tb.textContent=G.tower.active?`バトルタワー 第${G.tower.floor+1}層へ`:'バトルタワーに挑む（全5層）';
-  $('tEnemy').disabled=!h;
+  $('fightBtn').disabled=busy;
+  $('cardSum').textContent=`カード：${G.card?G.card.label:''}`;
   $('techs').innerHTML=Object.entries(TECH).map(([key,t])=>`<div class="tech ${G.lastTech===key?'hit':''}"><b>${t.jp}</b><span>${t.how}</span></div>`).join('');
-  $('log').innerHTML=G.log.slice(-8).map(l=>`<div style="${l.c?'color:'+l.c:''}">${esc(l.m)}</div>`).join('');
+  $('log').innerHTML=G.log.slice(-6).map(l=>`<div style="${l.c?'color:'+l.c:''}">${esc(l.m)}</div>`).join('');
 }
+$('slots').addEventListener('click',e=>{
+  const b=e.target.closest('.slot[data-i]');if(!b||G.mode!=='scan')return;const i=+b.dataset.i;
+  if(G.overwrite&&G.last){if(confirm(`保存枠${i+1}の「${G.slots[i].name}」を上書きしますか？`))putSlot(i,G.last);else G.overwrite=false;renderPanel();return;}
+  G.sel=G.sel===i?-1:i;G.reveal=null;renderPanel();
+});
+
+// ================= pick (who fights whom) =================
+function openPick(){
+  if(G.mode!=='scan'||G.sess)return;
+  G.pick={step:'mine'};renderPick();$('pick').classList.add('on');
+}
+function closePick(){G.pick=null;$('pick').classList.remove('on');}
+const affTag=(a,foe,label)=>{if(!foe)return '';const m=matchup(a.el,foe.el);return `<span class="aff" style="color:${m.c}">${label||m.t}</span>`;};
+function renderPick(){
+  const P=G.pick,ch=G.challenger,has=G.slots.some(Boolean);
+  $('pickBack').style.display=P.step==='foe'?'':'none';
+  if(P.step==='mine'){
+    $('pickT').textContent=ch?`「${ch.name}」からの挑戦`:'自分の戦士を選ぶ';
+    $('pickP').textContent=!has?'保存枠が空です。カードを通して「保存」してから、もう一度「対戦」を押してください。':ch?'戦わせる戦士を選ぶと、すぐに対戦が始まります。右上は相手との相性です。':'誰で戦うかを選んでください。';
+    $('pickSlots').innerHTML=G.slots.map((w,i)=>slotHTML(w,i,'',w?affTag(w,ch):'')).join('');
+    $('pickOpts').innerHTML='';
+  }else{
+    const me=G.slots[P.mine];
+    $('pickT').textContent=`${me.name} の相手を選ぶ`;
+    $('pickP').textContent='保存枠の戦士（同じ戦士同士のミラー対戦も可）か、バトルタワーを選んでください。相手はCPUが操作します。';
+    $('pickSlots').innerHTML=G.slots.map((w,i)=>slotHTML(w,i,'',w?affTag(me,w,i===P.mine?'ミラー':''):'')).join('');
+    const tw=G.tower.active&&G.tower.slot===P.mine?G.tower.floor:0;
+    $('pickOpts').innerHTML=`<button class="b" id="towerOpt">バトルタワー 第${tw+1}層${tw?'（続きから）':''}</button>`+(ch?`<button class="b red" id="chOpt">挑戦者「${esc(ch.name)}」</button>`:'');
+    $('towerOpt').onclick=()=>{closePick();startTower(P.mine);};
+    if(ch)$('chOpt').onclick=()=>{closePick();startBattle(me,ch,{mode:'duel',label:'挑戦状バトル'});};
+  }
+}
+$('pickSlots').addEventListener('click',e=>{
+  const b=e.target.closest('.slot[data-i]');if(!b||!G.pick)return;const i=+b.dataset.i,w=G.slots[i];if(!w)return;
+  if(G.pick.step==='mine'){
+    G.sel=i;
+    if(G.challenger){const ch=G.challenger;closePick();startBattle(w,ch,{mode:'duel',label:'挑戦状バトル'});return;}
+    G.pick={step:'foe',mine:i};renderPick();
+  }else{const mi=G.pick.mine,me=G.slots[mi];closePick();startBattle(me,w,{mode:'duel',label:mi===i?'ミラー対戦':'フリー対戦'});}
+});
+$('pickBack').onclick=()=>{G.pick={step:'mine'};renderPick();};
+$('pickClose').onclick=closePick;
+$('fightBtn').onclick=openPick;
+function startTower(i){
+  const w=G.slots[i];if(!w)return;
+  if(!G.tower.active||G.tower.slot!==i)G.tower={active:true,floor:0,hp:w.hp,slot:i};
+  const f=G.tower.floor;startBattle(w,TOWER[f],{mode:'tower',scale:TSCALE[f],hp:G.tower.hp,label:`バトルタワー 第${f+1}層${f===4?'（塔主）':''}`});
+}
+
+// ================= card tools =================
 $('preset').innerHTML=PRESETS.map(([b,l],i)=>`<option value="${i}">${l}　${b}${cdig([...b].map(Number))}</option>`).join('');
-$('preset').onchange=e=>{const [b,l]=PRESETS[+e.target.value];setCard(b+cdig([...b].map(Number)),l);};
+$('preset').onchange=e=>{const [b,l]=PRESETS[+e.target.value];setCard(b+cdig([...b].map(Number)),l);$('cardPick').open=false;};
 $('janBtn').onclick=()=>{
   let v=$('jan').value.replace(/\D/g,'');const msg=$('msg');msg.textContent='';
   if(v.length===8)v='00000'+v;
@@ -1131,18 +1253,11 @@ $('janBtn').onclick=()=>{
   if(v.length!==13){msg.textContent='8桁・12桁・13桁の数字を入力してください。';return;}
   const d=[...v].map(Number);
   if(cdig(d)!==d[12]){msg.textContent=`チェックデジットが違うため ${d[12]}→${cdig(d)} に補正しました。`;d[12]=cdig(d);v=d.join('');}
-  setCard(v,'JAN '+v.slice(0,4));
+  setCard(v,'JAN '+v.slice(0,4));if(!msg.textContent)$('cardPick').open=false;
 };
-$('rndBtn').onclick=()=>{const d=Array.from({length:12},()=>Math.floor(Math.random()*10));setCard(d.join('')+cdig(d),'RANDOM');};
-$('insR').onclick=()=>{if(G.sess||G.mode!=='scan')return;G.insertSide='right';$('insR').classList.add('on');$('insL').classList.remove('on');resetCard(false);};
-$('insL').onclick=()=>{if(G.sess||G.mode!=='scan')return;G.insertSide='left';$('insL').classList.add('on');$('insR').classList.remove('on');resetCard(false);};
-$('tSelf').onclick=()=>setTarget('self');
-$('tEnemy').onclick=()=>{if(G.hero)setTarget('enemy');};
-$('towerBtn').onclick=()=>{
-  if(!G.hero||G.mode!=='scan'||G.sess)return;
-  if(!G.tower.active)G.tower={active:true,floor:0,hp:G.hero.hp};
-  const f=G.tower.floor;startBattle(G.hero,TOWER[f],{mode:'tower',scale:TSCALE[f],hp:G.tower.hp,label:`バトルタワー 第${f+1}層${f===4?'（塔主）':''}`});
-};
+$('rndBtn').onclick=()=>{const d=Array.from({length:12},()=>Math.floor(Math.random()*10));setCard(d.join('')+cdig(d),'RANDOM');$('cardPick').open=false;};
+$('flipBtn').onclick=()=>{if(G.sess||G.mode!=='scan')return;G.insertSide=G.insertSide==='right'?'left':'right';
+  $('flipBtn').textContent=G.insertSide==='right'?'⇄ 反対側から差す':'⇄ 右から差す（通常）';$('flipBtn').classList.toggle('on',G.insertSide==='left');resetCard(false);};
 
 // ================= input =================
 function ensureAudio(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}}
@@ -1167,7 +1282,7 @@ addEventListener('resize',layout);
 function loadFromURL(){
   const Q=new URLSearchParams(location.search);
   const vs=Q.get('vs');
-  if(vs){const w=warriorFromId(vs);if(w){G.challenger=w;log(`挑戦状が届きました：「${w.name}」${w.title}`,'#ff9aa8');}else log('挑戦状URLの形式が正しくありません。','#ff9aa8');}
+  if(vs){const w=warriorFromId(vs);if(w){G.challenger=w;log(`挑戦状が届きました：「${w.name}」${w.title}`,'#ff9aa8');if(!Q.get('duel'))setTimeout(openPick,50);}else log('挑戦状URLの形式が正しくありません。','#ff9aa8');}
   const du=Q.get('duel'),me=Q.get('me'),seed=Q.get('seed'),inp=Q.get('in');
   if(du&&me&&seed!=null&&inp!=null){
     const ew=warriorFromId(du),pw=warriorFromId(me),sd=Number(seed);
@@ -1192,6 +1307,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 setCard(PRESETS[0][0]+cdig([...PRESETS[0][0]].map(Number)),PRESETS[0][1]);
+loadStore();
 layout();
 log('カードを読み取り口に通して戦士を呼び出してください。');
 loadFromURL();
